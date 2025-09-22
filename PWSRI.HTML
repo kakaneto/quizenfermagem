@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Automedicação e Saúde Física</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --text-color: #333;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .quiz-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+        
+        .quiz-header {
+            padding: 2rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+        
+        .quiz-header h1 {
+            margin-bottom: 0.5rem;
+            font-size: 2.2rem;
+        }
+        
+        .quiz-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .quiz-body {
+            padding: 2rem;
+        }
+        
+        .category-selector {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+        }
+        
+        .category-btn.automedicacao {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .category-btn.saude {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .category-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--dark-color);
+            font-size: 1.8rem;
+        }
+        
+        .question-counter {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        li {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: #f9f9f9;
+        }
+        
+        label:hover {
+            background-color: #f0f0f0;
+            border-color: var(--primary-color);
+        }
+        
+        input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: var(--shadow);
+            font-weight: bold;
+            display: block;
+            margin: 1.5rem auto 0;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result-container {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .score {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .result-message {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .restart-btn {
+            background-color: var(--secondary-color);
+            margin-top: 1rem;
+        }
+        
+        .restart-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .progress {
+            height: 10px;
+            background-color: #eee;
+            margin-bottom: 1.5rem;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .correct {
+            background-color: rgba(46, 204, 113, 0.2);
+            border-color: var(--secondary-color);
+        }
+        
+        .incorrect {
+            background-color: rgba(231, 76, 60, 0.2);
+            border-color: var(--danger-color);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .info-box {
+            background-color: #e8f4fc;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        @media (max-width: 600px) {
+            .quiz-body {
+                padding: 1.5rem;
+            }
+            
+            .category-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .category-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1>Quiz de Saúde</h1>
+            <p>Teste seus conhecimentos sobre automedicação e saúde física</p>
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div id="start-container" class="quiz-body">
+            <h2>Bem-vindo ao Quiz de Saúde!</h2>
+            <div class="info-box">
+                <p>Este quiz contém questões sobre os perigos da automedicação e saúde física. Escolha uma categoria para começar!</p>
+            </div>
+            
+            <div class="category-selector">
+                <button class="category-btn automedicacao active" data-category="automedicacao">Perigos da Automedicação</button>
+                <button class="category-btn saude" data-category="saude">Saúde Física</button>
+            </div>
+            
+            <button id="start-btn">Iniciar Quiz</button>
+        </div>
+        
+        <div id="quiz-container" class="quiz-body hidden">
+            <div class="question-counter" id="question-counter">Questão 1 de 5</div>
+            <h2 id="question">Pergunta aparece aqui</h2>
+            <ul id="answers">
+                <!-- As opções serão inseridas via JavaScript -->
+            </ul>
+            <button id="next-btn">Próxima</button>
+        </div>
+        
+        <div id="result-container" class="result-container hidden">
+            <h2>Resultado do Quiz</h2>
+            <div class="score">Você acertou <span id="score">0</span> de <span id="total-questions">0</span></div>
+            <p class="result-message" id="result-message"></p>
+            <button id="restart-btn" class="restart-btn">Fazer Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do quiz
+        const quizConfig = {
+            automedicacao: {
+                title: "Perigos da Automedicação",
+                questions: [
+                    {
+                        question: "O que significa automedicação?",
+                        answers: [
+                            "Tomar remédios apenas com orientação médica",
+                            "Tomar remédios por conta própria, sem prescrição",
+                            "Guardar remédios em casa",
+                            "Comprar vitaminas na farmácia"
+                        ],
+                        correct: 1,
+                        explanation: "Automedicação é o ato de tomar remédios por conta própria, sem orientação de um profissional de saúde. Isso pode trazer sérios riscos à saúde."
+                    },
+                    {
+                        question: "Qual é um dos maiores perigos da automedicação?",
+                        answers: [
+                            "Cura mais rápida",
+                            "Alívio imediato sem riscos",
+                            "Más reações no corpo e intoxicação",
+                            "Prevenir qualquer doença"
+                        ],
+                        correct: 2,
+                        explanation: "A automedicação pode causar más reações no organismo, incluindo intoxicação, alergias e efeitos colaterais graves."
+                    },
+                    {
+                        question: "Usar antibiótico sem orientação médica pode causar:",
+                        answers: [
+                            "Resistência bacteriana (quando o remédio não faz mais efeito)",
+                            "Aumento da força muscular",
+                            "Melhor concentração",
+                            "Nenhum problema"
+                        ],
+                        correct: 0,
+                        explanation: "O uso inadequado de antibióticos pode levar à resistência bacteriana, tornando as bactérias mais fortes e os medicamentos menos eficazes."
+                    },
+                    {
+                        question: "Misturar diferentes remédios sem orientação pode:",
+                        answers: [
+                            "Potencializar efeitos perigosos",
+                            "Anular o efeito de um ou mais medicamentos",
+                            "Causar reações graves no organismo",
+                            "Todas as alternativas"
+                        ],
+                        correct: 3,
+                        explanation: "A mistura de medicamentos sem orientação pode causar interações perigosas, incluindo potencialização de efeitos, anulação da eficácia e reações graves."
+                    },
+                    {
+                        question: "Tomar remédio 'igual ao de um amigo' porque os sintomas parecem os mesmos é:",
+                        answers: [
+                            "Correto, se funcionou para ele",
+                            "Errado e arriscado",
+                            "Melhor do que ir ao médico",
+                            "Um jeito de economizar tempo"
+                        ],
+                        correct: 1,
+                        explanation: "Cada pessoa reage de forma diferente aos medicamentos. O que funciona para uma pessoa pode ser perigoso para outra. Sempre consulte um médico."
+                    }
+                ]
+            },
+            saude: {
+                title: "Saúde Física",
+                questions: [
+                    {
+                        question: "O que é considerado ter um peso saudável?",
+                        answers: [
+                            "Quando está muito magro",
+                            "Quando está dentro do peso ideal para a altura",
+                            "Quando está acima do peso",
+                            "Quando está obeso"
+                        ],
+                        correct: 1,
+                        explanation: "O peso saudável é aquele adequado para a altura, idade e estrutura corporal de cada pessoa, mantendo um equilíbrio entre massa muscular e gordura."
+                    },
+                    {
+                        question: "Ter excesso de peso pode aumentar o risco de:",
+                        answers: [
+                            "Diabetes",
+                            "Pressão alta",
+                            "Problemas no coração",
+                            "Todas as alternativas"
+                        ],
+                        correct: 3,
+                        explanation: "O excesso de peso está associado a várias condições de saúde, incluindo diabetes, hipertensão e doenças cardiovasculares."
+                    },
+                    {
+                        question: "Qual é a pressão considerada alta?",
+                        answers: [
+                            "12 por 8",
+                            "14 por 9",
+                            "10 por 6",
+                            "11 por 7"
+                        ],
+                        correct: 1,
+                        explanation: "A pressão arterial é considerada alta quando está igual ou acima de 14 por 9 (140/90 mmHg)."
+                    },
+                    {
+                        question: "Fazer atividade física regularmente ajuda em quê?",
+                        answers: [
+                            "Emagrecer",
+                            "Melhorar o humor e diminuir o estresse",
+                            "Fortalecer o coração e os músculos",
+                            "Todas as alternativas"
+                        ],
+                        correct: 3,
+                        explanation: "A atividade física regular traz benefícios para a saúde física e mental, incluindo controle de peso, melhora do humor e fortalecimento cardiovascular."
+                    },
+                    {
+                        question: "Ter muita gordura na barriga pode causar:",
+                        answers: [
+                            "Dor de ouvido",
+                            "Mais risco de diabetes e doenças do coração",
+                            "Problemas de visão",
+                            "Resfriados frequentes"
+                        ],
+                        correct: 1,
+                        explanation: "O acúmulo de gordura abdominal está associado a um maior risco de desenvolver diabetes tipo 2 e doenças cardiovasculares."
+                    },
+                    {
+                        question: "Quando o enfermeiro faz um exame físico, ele:",
+                        answers: [
+                            "Só mede a pressão",
+                            "Só olha os batimentos do coração",
+                            "Avalia várias partes do corpo (pressão, respiração, pele, etc.)",
+                            "Não examina nada"
+                        ],
+                        correct: 2,
+                        explanation: "O exame físico realizado por um enfermeiro é completo e inclui a avaliação de vários sistemas do corpo para identificar possíveis problemas de saúde."
+                    }
+                ]
+            }
+        };
+
+        // Variáveis de estado do quiz
+        let currentCategory = 'automedicacao';
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let userAnswers = [];
+
+        // Elementos do DOM
+        const startContainer = document.getElementById('start-container');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultContainer = document.getElementById('result-container');
+        const questionElement = document.getElementById('question');
+        const answersElement = document.getElementById('answers');
+        const nextButton = document.getElementById('next-btn');
+        const startButton = document.getElementById('start-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const scoreElement = document.getElementById('score');
+        const totalQuestionsElement = document.getElementById('total-questions');
+        const resultMessage = document.getElementById('result-message');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+
+        // Inicializar o quiz
+        function initQuiz() {
+            startButton.addEventListener('click', startQuiz);
+            nextButton.addEventListener('click', nextQuestion);
+            restartButton.addEventListener('click', restartQuiz);
+            
+            // Adicionar eventos aos botões de categoria
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remover classe active de todos os botões
+                    categoryButtons.forEach(btn => btn.classList.remove('active'));
+                    // Adicionar classe active ao botão clicado
+                    button.classList.add('active');
+                    // Atualizar categoria selecionada
+                    currentCategory = button.dataset.category;
+                });
+            });
+        }
+
+        // Iniciar o quiz
+        function startQuiz() {
+            startContainer.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            showQuestion();
+        }
+
+        // Mostrar a pergunta atual
+        function showQuestion() {
+            selectedAnswer = null;
+            const questions = quizConfig[currentCategory].questions;
+            const question = questions[currentQuestion];
+            
+            questionElement.textContent = question.question;
+            questionCounter.textContent = `Questão ${currentQuestion + 1} de ${questions.length}`;
+            
+            // Limpar respostas anteriores
+            answersElement.innerHTML = '';
+            
+            // Adicionar novas opções de resposta
+            question.answers.forEach((answer, index) => {
+                const li = document.createElement('li');
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'answer';
+                input.value = index;
+                input.id = `answer-${index}`;
+                
+                const label = document.createElement('label');
+                label.htmlFor = `answer-${index}`;
+                label.textContent = answer;
+                
+                label.prepend(input);
+                li.appendChild(label);
+                answersElement.appendChild(li);
+                
+                // Adicionar evento de clique
+                input.addEventListener('change', () => {
+                    selectedAnswer = parseInt(input.value);
+                    // Remover seleções anteriores
+                    document.querySelectorAll('input[name="answer"]').forEach(radio => {
+                        radio.parentElement.classList.remove('selected');
+                    });
+                    // Adicionar classe de seleção
+                    input.parentElement.classList.add('selected');
+                });
+            });
+            
+            // Atualizar barra de progresso
+            progressBar.style.width = `${((currentQuestion) / questions.length) * 100}%`;
+        }
+
+        // Próxima pergunta ou finalizar quiz
+        function nextQuestion() {
+            if (selectedAnswer === null) {
+                alert('Por favor, selecione uma resposta');
+                return;
+            }
+            
+            // Armazenar resposta do usuário
+            userAnswers.push({
+                question: quizConfig[currentCategory].questions[currentQuestion].question,
+                userAnswer: selectedAnswer,
+                correctAnswer: quizConfig[currentCategory].questions[currentQuestion].correct,
+                explanation: quizConfig[currentCategory].questions[currentQuestion].explanation
+            });
+            
+            // Verificar resposta
+            const correctIndex = quizConfig[currentCategory].questions[currentQuestion].correct;
+            if (selectedAnswer === correctIndex) {
+                score++;
+            }
+            
+            // Destacar resposta correta e incorreta
+            const answers = document.querySelectorAll('input[name="answer"]');
+            answers.forEach((answer, index) => {
+                answer.disabled = true;
+                if (index === correctIndex) {
+                    answer.parentElement.classList.add('correct');
+                } else if (index === selectedAnswer && index !== correctIndex) {
+                    answer.parentElement.classList.add('incorrect');
+                }
+            });
+            
+            // Aguardar um pouco antes de prosseguir
+            setTimeout(() => {
+                currentQuestion++;
+                const questions = quizConfig[currentCategory].questions;
+                
+                if (currentQuestion < questions.length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1500);
+        }
+
+        // Mostrar resultados
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            
+            const totalQuestions = quizConfig[currentCategory].questions.length;
+            scoreElement.textContent = score;
+            totalQuestionsElement.textContent = totalQuestions;
+            
+            // Mensagem personalizada baseada na pontuação
+            if (score === totalQuestions) {
+                resultMessage.textContent = 'Parabéns! Você demonstrou excelente conhecimento sobre o tema!';
+            } else if (score >= totalQuestions * 0.7) {
+                resultMessage.textContent = 'Muito bom! Seu conhecimento é muito bom, mas ainda há espaço para aprender mais.';
+            } else if (score >= totalQuestions * 0.5) {
+                resultMessage.textContent = 'Bom trabalho! Você tem uma base de conhecimento, mas pode melhorar.';
+            } else {
+                resultMessage.textContent = 'Continue estudando! O conhecimento sobre saúde é importante para o seu bem-estar.';
+            }
+            
+            // Adicionar explicações das respostas
+            const explanationsDiv = document.createElement('div');
+            explanationsDiv.className = 'info-box';
+            explanationsDiv.innerHTML = '<h3>Resumo das suas respostas:</h3>';
+            
+            userAnswers.forEach((item, index) => {
+                const isCorrect = item.userAnswer === item.correctAnswer;
+                const explanationItem = document.createElement('div');
+                explanationItem.style.marginTop = '1rem';
+                explanationItem.style.padding = '0.5rem';
+                explanationItem.style.borderLeft = `4px solid ${isCorrect ? 'var(--secondary-color)' : 'var(--danger-color)'}`;
+                explanationItem.style.backgroundColor = isCorrect ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)';
+                
+                explanationItem.innerHTML = `
+                    <p><strong>${index + 1}. ${item.question}</strong></p>
+                    <p>Sua resposta: ${quizConfig[currentCategory].questions[index].answers[item.userAnswer]}</p>
+                    <p>Resposta correta: ${quizConfig[currentCategory].questions[index].answers[item.correctAnswer]}</p>
+                    <p><em>${item.explanation}</em></p>
+                `;
+                
+                explanationsDiv.appendChild(explanationItem);
+            });
+            
+            resultMessage.parentNode.insertBefore(explanationsDiv, resultMessage.nextSibling);
+            
+            // Completar a barra de progresso
+            progressBar.style.width = '100%';
+        }
+
+        // Reiniciar o quiz
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = null;
+            userAnswers = [];
+            
+            // Remover explicações anteriores
+            const explanationsDiv = document.querySelector('.info-box');
+            if (explanationsDiv && explanationsDiv.parentNode) {
+                explanationsDiv.parentNode.removeChild(explanationsDiv);
+            }
+            
+            resultContainer.classList.add('hidden');
+            startContainer.classList.remove('hidden');
+        }
+
+        // Inicializar quando o documento estiver carregado
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>
